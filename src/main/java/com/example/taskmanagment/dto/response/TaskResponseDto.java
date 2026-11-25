@@ -23,7 +23,7 @@ public class TaskResponseDto {
 
     TaskPriority taskPriority;
 
-    String taskWeight;
+    Short taskWeight;
 
     LocalDateTime createdAt = LocalDateTime.now();
 }

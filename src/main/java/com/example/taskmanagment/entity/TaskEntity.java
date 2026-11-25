@@ -7,38 +7,65 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Entity
+@ToString(exclude = {"createdBy","assignee"})
+@Table(name = "tasks")
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class TaskEntity {
     @Id//primary key kimi qebul eden anotasiya
     @GeneratedValue(strategy = GenerationType.IDENTITY)//auto increment ucun
-    private Integer id;
+    Integer id;
 
-    @Column(name = "title", length = 30)
-    private String title;
+    @Column(name = "title", length = 30, nullable = false, unique = true)
+    String title;
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    @Column(name = "description", columnDefinition = "TEXT", length = 2000)
+    String description;
 
-    @Column(name = "task_status")
+    @Column(name = "task_status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    private TaskStatus taskStatus = TaskStatus.TODO;
+    TaskStatus taskStatus = TaskStatus.TODO;
 
-    @Column(name = "task_priority")
+    @Column(name = "task_priority", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    private TaskPriority taskPriority;
+    TaskPriority taskPriority;
 
     @Column(name = "task_weight")
-    private String taskWeight;
+    Short taskWeight;
 
-    @Column(name = "status")
-    private boolean status = true;
+    @Column(name = "status", nullable = false)
+    Boolean status = true;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", nullable = false, updatable = false)
+    LocalDateTime createdAt;
+    @Column(name = "updated_at", nullable = false)
+    LocalDateTime updatedAt;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    UserEntity createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assignee_id")
+    UserEntity assignee;
+
+
+
+    @PrePersist
+    public void onCreate() {
+        if (taskWeight == null) {
+            taskStatus = TaskStatus.TODO;
+        }
+        if (status == null) {
+            status = true;
+        }
+        createdAt = LocalDateTime.now();
+    }
 }
